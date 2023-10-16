@@ -1,0 +1,59 @@
+name: Automated Testing and Merging
+
+on:
+  push:
+    branches:
+      - feature/*
+      - bug/*
+      - hotfix/*
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Merge to dev
+        if: success()
+        env:
+          GIT_USERNAME: ${{ secrets.GIT_USERNAME }}
+          GIT_EMAIL: ${{ secrets.GIT_EMAIL }}
+        run: |
+          git config user.name $GIT_USERNAME
+          git config user.email $GIT_EMAIL
+          git fetch origin dev:dev
+          git checkout dev
+
+          git merge ${{ github.ref }} --no-commit --no-ff --allow-unrelated-histories
+          git diff --name-only --diff-filter=U | xargs git checkout --theirs
+          git commit -a -m "Merge branch '${{ github.ref }}' into dev" --quiet
+          git push origin dev
+
+      # - name: Merge to master
+      #   if: success() && startsWith(github.ref, 'refs/heads/feature/')
+      #   env:
+      #     GIT_USERNAME: ${{ secrets.GIT_USERNAME }}
+      #     GIT_EMAIL: ${{ secrets.GIT_EMAIL }}
+      #   run: |
+      #     git config user.name $GIT_USERNAME
+      #     git config user.email $GIT_EMAIL
+      #     git checkout master
+      #     git pull origin master
+      #     git merge dev --no-commit --no-ff
+      #     git commit -a -m "Merge branch 'dev' into master" --quiet
+      #     git push origin master
