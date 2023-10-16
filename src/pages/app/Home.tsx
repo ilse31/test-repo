@@ -8,7 +8,7 @@ const Home = (props: Props) => {
     <div className='App'>
       <header className='App-header'>
         <p className='animate-typing overflow-hidden whitespace-nowrap border-r-4 border-r-white pr-5 text-5xl text-white font-bold'>
-          React Typescript Template Webpack
+          Goto Technical Test
         </p>
         <span className='flex gap-3'>
           <a
@@ -30,8 +30,13 @@ const Home = (props: Props) => {
           </a>
         </span>
         <div className='flex flex-col'>
-          <Link className='underline' to='/design-system'>Design System</Link>
-          <a className='underline' href='https://github.com/ilse31/react-scratch-boilerplate'>
+          <Link className='underline' to='/phonebook'>
+            Go to Apps
+          </Link>
+          <a
+            className='underline'
+            href='https://github.com/ilse31/react-scratch-boilerplate'
+          >
             See Repos
           </a>
         </div>

@@ -1,5 +1,7 @@
 import * as React from "react";
 import { Route, Routes } from "react-router-dom";
+import PhonebookList from "src/layouts/PhonebookList";
+import ContactList from "src/pages/views/ContactList";
 
 const Home = React.lazy(() => import("../pages/app/Home"));
 const HomeDesignSystem = React.lazy(
@@ -15,14 +17,19 @@ type Props = {};
 const Routed = (props: Props) => {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path='/' element={<Home />} />
       <Route element={<DesignSystem />}>
-        <Route path="/design-system">
+        <Route path='/design-system'>
           <Route index element={<HomeDesignSystem />} />
-          <Route path="buttons" element={<ButtonsPages />} />
-          <Route path="form" element={<FormPages />} />
-          <Route path="alerts" element={<AlertPages />} />
-          <Route path="modals" element={<ModalPages />} />
+          <Route path='buttons' element={<ButtonsPages />} />
+          <Route path='form' element={<FormPages />} />
+          <Route path='alerts' element={<AlertPages />} />
+          <Route path='modals' element={<ModalPages />} />
+        </Route>
+      </Route>
+      <Route element={<PhonebookList />}>
+        <Route path='/phonebook'>
+          <Route index element={<ContactList />} />
         </Route>
       </Route>
     </Routes>
