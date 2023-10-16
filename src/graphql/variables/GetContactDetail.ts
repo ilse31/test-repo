@@ -1,3 +1,5 @@
-export const getContactDetail = {
-  id: 1,
+export const getContactDetail = (id: number) => {
+  return {
+    id: id,
+  };
 };
