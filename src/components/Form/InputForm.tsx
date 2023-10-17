@@ -77,7 +77,7 @@ export default function Input({
           disabled={disabled}
           className={clsx(
             "flex w-full",
-            "min-h-[2.25rem] py-0 md:min-h-[2.5rem]",
+            "min-h-[2.25rem] py-0 md:min-h-[2.5rem] text-black",
             (readOnly || disabled) && LeftIcon && "pl-9",
             rightNode && "pr-10",
             variant === "outline" && [
