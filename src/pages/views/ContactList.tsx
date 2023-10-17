@@ -8,6 +8,8 @@ import Typography from "src/components/Typografy/Text";
 import LoadingSpiner from "src/components/Loading/LoadingSpiner";
 import { DELETE_DATA, GET_CONTACT_LIST, GetContactList } from "src/graphql";
 import useContactList from "src/hooks/useContactData";
+import { useContact } from "src/context/contactdata";
+import Button from "src/components/Button/Button";
 
 type Props = {};
 
@@ -30,6 +32,8 @@ const ContactList = (props: Props) => {
     refetchAllData,
     limit,
   } = useContactList();
+  const { state, addContactData, toggleFavorite } = useContact();
+  const { contact } = state;
 
   return (
     <div className='dark:text-white'>
@@ -92,7 +96,7 @@ const ContactList = (props: Props) => {
 
         {errorAllData ? <Typography>Error</Typography> : null}
         {loadingMore && <div className='text-center py-4'>Loading. . .</div>}
-        {!errorAllData &&
+        {/* {!errorAllData &&
           contactData.map((contact: any, index: number) => (
             <div
               key={index}
@@ -112,11 +116,50 @@ const ContactList = (props: Props) => {
                 className='cursor-pointer'
               />
             </div>
-          ))}
-
-        {contactData.length === 0 && !loadingAllData && !errorAllData && (
-          <Typography>No Data Found</Typography>
-        )}
+          ))} */}
+        {contact &&
+          contact
+            .filter((item: any) => {
+              return (
+                (item.first_name
+                  .toLowerCase()
+                  .includes(searchValue.toLowerCase()) ||
+                  item.last_name
+                    .toLowerCase()
+                    .includes(searchValue.toLowerCase())) &&
+                !item.isFavorites
+              );
+            })
+            .map((contact: any, index: number) => (
+              <div
+                key={index}
+                className='flex gap-10 justify-between outline my-5 p-5 rounded-md items-center'
+              >
+                <div className='flex gap-10 items-center'>
+                  <BsFillPersonFill className='text-4xl' />
+                  <div>
+                    <Typography key={index}>
+                      {contact.first_name} {contact.last_name}
+                    </Typography>
+                    {contact.phones[0]?.number}
+                  </div>
+                </div>
+                <Button
+                  onClick={(e: React.MouseEvent) => toggleFavorite(contact.id)}
+                >
+                  {contact.isFavorites ? "UnFav" : "Fav"}
+                </Button>
+                {/* <BsFillTrashFill
+                  onClick={(e: React.MouseEvent) => handleDelete(contact.id)}
+                  className='cursor-pointer'
+                /> */}
+              </div>
+            ))}
+        <div className='items-center justify-center flex min-h-screen'>
+          {contact.length === 0 && !loadingAllData && !errorAllData && (
+            <Typography variant='h2'>No Data Found</Typography>
+          )}
+        </div>
       </div>
     </div>
   );

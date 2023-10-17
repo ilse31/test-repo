@@ -6,6 +6,7 @@ import {
   useQuery,
 } from "@apollo/client";
 import { GET_CONTACT_LIST, DELETE_DATA, GetContactList } from "src/graphql";
+import { useContact } from "src/context/contactdata";
 
 interface Contact {
   id: string;
@@ -41,8 +42,9 @@ function useContactList(): ContactListHook {
   const [hasMore, setHasMore] = useState(true);
   const [contactData, setContactData] = useState<Contact[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [previousSearchValue, setPreviousSearchValue] = useState("");
-
+  // const [previousSearchValue, setPreviousSearchValue] = useState("");
+  const { state, addContactData } = useContact();
+  const { contact } = state;
   const {
     data: allData,
     loading: loadingAllData,
@@ -66,16 +68,17 @@ function useContactList(): ContactListHook {
   };
 
   const handleSearch = () => {
-    if (searchValue !== previousSearchValue) {
-      console.log("search", searchValue);
-      setPreviousSearchValue(searchValue);
-      setOffset(0);
-      setContactData([]);
-      setHasMore(true);
-      refetchAllData({
-        variables: GetContactList(searchValue, limit, 0, "asc"),
-      });
-    }
+    console.log(searchValue);
+    // if (searchValue !== previousSearchValue) {
+    //   console.log("search", searchValue);
+    //   setPreviousSearchValue(searchValue);
+    //   setOffset(0);
+    //   setContactData([]);
+    //   setHasMore(true);
+    //   refetchAllData({
+    //     variables: GetContactList(searchValue, limit, 0, "asc"),
+    //   });
+    // }
   };
 
   const handleSearchButtonClick = () => {
@@ -103,6 +106,10 @@ function useContactList(): ContactListHook {
     }
   };
 
+  useEffect(() => {
+    console.log("contact", contact);
+  }, [contact]);
+
   const handleDelete = (id: string) => {
     deletedata({
       variables: { id: parseInt(id) },
@@ -124,6 +131,12 @@ function useContactList(): ContactListHook {
       setContactData((prevData) => [...prevData, ...newContactList]);
     }
   }, [allData, limit]);
+
+  useEffect(() => {
+    if (!loadingAllData) {
+      addContactData(allData?.contact || []);
+    }
+  }, [loadingAllData]);
 
   useEffect(() => {
     window.addEventListener("scroll", loadMoreData);

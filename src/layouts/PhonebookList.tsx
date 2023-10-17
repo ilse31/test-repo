@@ -20,11 +20,7 @@ const PhonebookList = (props: Props) => {
 
   return (
     <div className='bg-white dark:bg-slate-700 min-h-screen w-full p-4'>
-      <div className='max-w-5xl   mx-auto'>
-        {/* <div className='flex justify-between mb-5 items-center'>
-          <h1 className='dark:text-white'>Goto Technical Test</h1>
-          <Button onClick={handleDarkMode}>Go to {darkMode}</Button>
-        </div> */}
+      <div className='max-w-5xl  mx-auto'>
         <div className='w-full h-full'>
           <Outlet />
         </div>
