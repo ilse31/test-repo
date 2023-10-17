@@ -5,7 +5,6 @@ import { GET_CONTACT_LIST } from "src/graphql/Query/getData";
 import { GetContactList } from "src/graphql/variables/GetContactList";
 import { AiOutlineSearch, AiFillAppstore } from "react-icons/ai";
 import { BiMenuAltLeft } from "react-icons/bi";
-import Button from "src/components/Button/Button";
 import { BsFillPersonFill } from "react-icons/bs";
 import Typography from "src/components/Typografy/Text";
 import LoadingSpiner from "src/components/Loading/LoadingSpiner";
@@ -13,12 +12,16 @@ import LoadingSpiner from "src/components/Loading/LoadingSpiner";
 type Props = {};
 
 //pages for render all contacts
+
 const ContactList = (props: Props) => {
   const [searchValue, setSearchValue] = useState("");
   const [isShowSearch, setIsShowSearch] = useState(false);
+  const [limit, setLimit] = useState(10);
   const [offset, setOffset] = useState(0);
-  const [contactData, setContactData] = useState([]);
-  const [reachedEnd, setReachedEnd] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [contactData, setContactData] = useState<Array<any>>([]);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [previousSearchValue, setPreviousSearchValue] = useState("");
 
   const {
     data: allData,
@@ -26,17 +29,22 @@ const ContactList = (props: Props) => {
     error: errorAllData,
     refetch: refetchAllData,
   } = useQuery(GET_CONTACT_LIST, {
-    variables: GetContactList(searchValue, 10, offset),
+    variables: GetContactList("", limit, offset, "asc"),
   });
-
-  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const handleChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
   };
+
   const handleSearch = () => {
-    setContactData([]);
-    refetchAllData(GetContactList(searchValue, 10, 0));
+    if (searchValue !== previousSearchValue) {
+      console.log("search", searchValue);
+      setPreviousSearchValue(searchValue);
+      setOffset(0);
+      setContactData([]);
+      setHasMore(true);
+      refetchAllData(GetContactList(searchValue, limit, 0, "asc"));
+    }
   };
 
   const handleSearchButtonClick = () => {
@@ -44,44 +52,42 @@ const ContactList = (props: Props) => {
   };
 
   const loadMoreData = () => {
-    if (!reachedEnd) {
-      const newOffset = offset + 10;
-      refetchAllData(GetContactList(searchValue, 10, newOffset));
-      setOffset(newOffset);
+    if (loadingAllData) {
+      return;
     }
-  };
-
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [offset]);
-
-  useEffect(() => {
-    if (allData && allData.contact) {
-      if (allData.contact.length === 0) {
-        setReachedEnd(true);
-      } else {
-        setReachedEnd(false);
-        if (offset === 0) {
-          setContactData(allData.contact);
-        } else {
-          setContactData((prevData) => prevData.concat(allData.contact));
-        }
-      }
+    if (allData?.contact.length === 0) {
+      return;
     }
-  }, [allData]);
-
-  //infinte scroll pagination
-  const handleScroll = () => {
     if (
-      bottomRef.current &&
-      window.innerHeight + window.scrollY >= bottomRef.current.offsetTop
+      window.innerHeight + window.scrollY >=
+      document.body.offsetHeight - 100
     ) {
-      loadMoreData();
+      setLoadingMore(true);
+      setTimeout(() => {
+        if (hasMore) {
+          setOffset(offset + limit);
+        }
+        setLoadingMore(false);
+      }, 500);
     }
   };
+
+  useEffect(() => {
+    if (allData) {
+      const newContactList = allData.contact || [];
+      if (newContactList.length < limit) {
+        setHasMore(false);
+      }
+      setContactData((prevData) => [...prevData, ...newContactList]);
+    }
+  }, [allData, limit]);
+
+  useEffect(() => {
+    window.addEventListener("scroll", loadMoreData);
+    return () => {
+      window.removeEventListener("scroll", loadMoreData);
+    };
+  }, [loadMoreData]);
 
   return (
     <div className='dark:text-white'>
@@ -99,6 +105,7 @@ const ContactList = (props: Props) => {
             id='search'
             variant='solid'
             name='search'
+            value={searchValue}
             label={null}
             onChange={handleChangeSearch}
             color='sky'
@@ -110,10 +117,29 @@ const ContactList = (props: Props) => {
             }}
             placeholder='Search'
             rightNode={
-              <AiOutlineSearch
-                onClick={(e: React.MouseEvent) => handleSearch()}
-                className='text-black cursor-pointer text-lg items-center'
-              />
+              searchValue ? (
+                <div className='flex items-center gap-5'>
+                  <div
+                    className='text-black cursor-pointer'
+                    onClick={(e: any) => {
+                      setSearchValue("");
+                      refetchAllData(GetContactList("", limit, 0, "asc"));
+                      setContactData([]);
+                    }}
+                  >
+                    X
+                  </div>
+                  <AiOutlineSearch
+                    onClick={(e: React.MouseEvent) => handleSearch()}
+                    className='text-black cursor-pointer text-lg items-center'
+                  />
+                </div>
+              ) : (
+                <AiOutlineSearch
+                  onClick={(e: React.MouseEvent) => handleSearch()}
+                  className='text-black cursor-pointer text-lg items-center'
+                />
+              )
             }
             className={` ${isShowSearch ? "visible" : ""}`}
           />
@@ -123,21 +149,20 @@ const ContactList = (props: Props) => {
         {loadingAllData ? <LoadingSpiner /> : null}
 
         {errorAllData ? <Typography>Error</Typography> : null}
-
+        {loadingMore && <div className='text-center py-4'>Loading. . .</div>}
         {!errorAllData &&
-          contactData.map((contact: any) => (
+          contactData.map((contact: any, index: number) => (
             <div
-              key={contact.id}
+              key={index}
               className='flex gap-10 outline my-5 p-5 rounded-md'
             >
               <BsFillPersonFill className='text-2xl' />
-              <Typography key={contact.id}>
+              <Typography key={index}>
                 {contact.first_name} {contact.last_name}
               </Typography>
             </div>
           ))}
       </div>
-      <div ref={bottomRef}></div>
     </div>
   );
 };

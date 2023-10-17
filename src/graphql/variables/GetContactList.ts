@@ -1,11 +1,21 @@
-export const GetContactList = (name: string, limit: number, offset: number) => {
+export const GetContactList = (
+  name: string,
+  limit: number,
+  offset: number,
+  order: string
+) => {
   return {
     //   distinct_on: ["column1", "column2"],
     limit: limit,
     offset: offset,
-    //   order_by: [{ column: "created_at", order: "asc" }],
+    order_by: {
+      created_at: order,
+    },
     where: {
-      first_name: { _like: `%${name}%` },
+      _or: [
+        { first_name: { _ilike: `%${name}%` } },
+        // { last_name: { _ilike: `%${name}%` } },
+      ],
     },
   };
 };
