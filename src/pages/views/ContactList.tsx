@@ -1,93 +1,35 @@
-import { useQuery } from "@apollo/client";
-import React, { useEffect, useRef, useState } from "react";
+import { useMutation, useQuery } from "@apollo/client";
+import React, { useEffect, useState } from "react";
 import Input from "src/components/Form/InputForm";
-import { GET_CONTACT_LIST } from "src/graphql/Query/getData";
-import { GetContactList } from "src/graphql/variables/GetContactList";
-import { AiOutlineSearch, AiFillAppstore } from "react-icons/ai";
+import { AiOutlineSearch } from "react-icons/ai";
 import { BiMenuAltLeft } from "react-icons/bi";
-import { BsFillPersonFill } from "react-icons/bs";
+import { BsFillPersonFill, BsFillTrashFill } from "react-icons/bs";
 import Typography from "src/components/Typografy/Text";
 import LoadingSpiner from "src/components/Loading/LoadingSpiner";
+import { DELETE_DATA, GET_CONTACT_LIST, GetContactList } from "src/graphql";
+import useContactList from "src/hooks/useContactData";
 
 type Props = {};
 
 //pages for render all contacts
 
 const ContactList = (props: Props) => {
-  const [searchValue, setSearchValue] = useState("");
-  const [isShowSearch, setIsShowSearch] = useState(false);
-  const [limit, setLimit] = useState(10);
-  const [offset, setOffset] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [contactData, setContactData] = useState<Array<any>>([]);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [previousSearchValue, setPreviousSearchValue] = useState("");
-
   const {
-    data: allData,
-    loading: loadingAllData,
-    error: errorAllData,
-    refetch: refetchAllData,
-  } = useQuery(GET_CONTACT_LIST, {
-    variables: GetContactList("", limit, offset, "asc"),
-  });
-
-  const handleChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(e.target.value);
-  };
-
-  const handleSearch = () => {
-    if (searchValue !== previousSearchValue) {
-      console.log("search", searchValue);
-      setPreviousSearchValue(searchValue);
-      setOffset(0);
-      setContactData([]);
-      setHasMore(true);
-      refetchAllData(GetContactList(searchValue, limit, 0, "asc"));
-    }
-  };
-
-  const handleSearchButtonClick = () => {
-    setIsShowSearch(!isShowSearch);
-  };
-
-  const loadMoreData = () => {
-    if (loadingAllData) {
-      return;
-    }
-    if (allData?.contact.length === 0) {
-      return;
-    }
-    if (
-      window.innerHeight + window.scrollY >=
-      document.body.offsetHeight - 100
-    ) {
-      setLoadingMore(true);
-      setTimeout(() => {
-        if (hasMore) {
-          setOffset(offset + limit);
-        }
-        setLoadingMore(false);
-      }, 500);
-    }
-  };
-
-  useEffect(() => {
-    if (allData) {
-      const newContactList = allData.contact || [];
-      if (newContactList.length < limit) {
-        setHasMore(false);
-      }
-      setContactData((prevData) => [...prevData, ...newContactList]);
-    }
-  }, [allData, limit]);
-
-  useEffect(() => {
-    window.addEventListener("scroll", loadMoreData);
-    return () => {
-      window.removeEventListener("scroll", loadMoreData);
-    };
-  }, [loadMoreData]);
+    searchValue,
+    setSearchValue,
+    handleChangeSearch,
+    handleSearch,
+    isShowSearch,
+    handleSearchButtonClick,
+    loadingAllData,
+    errorAllData,
+    contactData,
+    loadingMore,
+    handleDelete,
+    setContactData,
+    refetchAllData,
+    limit,
+  } = useContactList();
 
   return (
     <div className='dark:text-white'>
@@ -154,14 +96,27 @@ const ContactList = (props: Props) => {
           contactData.map((contact: any, index: number) => (
             <div
               key={index}
-              className='flex gap-10 outline my-5 p-5 rounded-md'
+              className='flex gap-10 justify-between outline my-5 p-5 rounded-md items-center'
             >
-              <BsFillPersonFill className='text-2xl' />
-              <Typography key={index}>
-                {contact.first_name} {contact.last_name}
-              </Typography>
+              <div className='flex gap-10 items-center'>
+                <BsFillPersonFill className='text-4xl' />
+                <div>
+                  <Typography key={index}>
+                    {contact.first_name} {contact.last_name}
+                  </Typography>
+                  {contact.phones[0]?.number}
+                </div>
+              </div>
+              <BsFillTrashFill
+                onClick={(e: React.MouseEvent) => handleDelete(contact.id)}
+                className='cursor-pointer'
+              />
             </div>
           ))}
+
+        {contactData.length === 0 && !loadingAllData && !errorAllData && (
+          <Typography>No Data Found</Typography>
+        )}
       </div>
     </div>
   );

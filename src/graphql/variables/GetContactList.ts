@@ -1,4 +1,4 @@
-export const GetContactList = (
+const GetContactList = (
   name: string,
   limit: number,
   offset: number,
@@ -12,10 +12,18 @@ export const GetContactList = (
       created_at: order,
     },
     where: {
-      _or: [
-        { first_name: { _ilike: `%${name}%` } },
-        // { last_name: { _ilike: `%${name}%` } },
-      ],
+      _or: [{ first_name: { _ilike: `%${name}%` } }],
     },
   };
 };
+
+const getContactDetail = (id: number) => {
+  return {
+    id: id,
+  };
+};
+
+
+export {
+  getContactDetail,GetContactList
+}
