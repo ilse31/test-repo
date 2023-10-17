@@ -6,11 +6,19 @@ type Props = {
   title: string;
   size: string;
   content: string;
+  children?: React.ReactNode;
   showModal: boolean;
   setShowModal: React.Dispatch<SetStateAction<boolean>>;
 };
 
-const Modal = ({ title, size, content, showModal, setShowModal }: Props) => {
+const Modal = ({
+  title,
+  size,
+  content,
+  showModal,
+  setShowModal,
+  children,
+}: Props) => {
   return (
     <>
       {showModal && (
@@ -28,15 +36,18 @@ const Modal = ({ title, size, content, showModal, setShowModal }: Props) => {
             )}
           >
             <div className='flex w-full justify-between items-center'>
-              <h4 className='font-semibold'>Modal {title}</h4>
+              <h4 className='font-semibold text-black'>{title}</h4>
               <MdOutlineClose
                 onClick={() => setShowModal(false)}
                 size={22}
-                className='cursor-pointer'
+                className='cursor-pointer text-black'
               />
             </div>
             <div className='h-[1.2px] bg-slate-200 my-1'></div>
-            <p>{content}</p>
+            <div className='text-black'>
+              {content}
+              {children}
+            </div>
           </div>
         </>
       )}

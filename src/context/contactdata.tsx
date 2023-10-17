@@ -17,10 +17,12 @@ type ContactContextType = {
   state: typeof initialState;
   addContactData: (data: any) => void;
   toggleFavorite: (id: number) => void;
+  removeContactData: (id: number) => void;
 };
 const ContactContext = React.createContext<ContactContextType | null>(null);
 const ADD_CONTACT_DATA = "ADD_CONTACT_DATA";
 const TOGGLE_FAVORITE = "TOGGLE_FAVORITE";
+const REMOVE_CONTACT_DATA = "REMOVE_CONTACT_DATA";
 
 const contactReducer = (
   state: { contact: any },
@@ -45,6 +47,14 @@ const contactReducer = (
       return {
         ...state,
         contact: updatedContact,
+      };
+    case REMOVE_CONTACT_DATA:
+      const filteredContact = state.contact.filter(
+        (contact: any) => contact.id !== action.payload
+      );
+      return {
+        ...state,
+        contact: filteredContact,
       };
     default:
       return state;
@@ -71,8 +81,14 @@ const ContactProvider = (props: ContactProviderProps) => {
     dispatch({ type: "TOGGLE_FAVORITE", payload: id });
   };
 
+  const removeContactData = (id: number) => {
+    dispatch({ type: REMOVE_CONTACT_DATA, payload: id });
+  };
+
   return (
-    <ContactContext.Provider value={{ state, addContactData, toggleFavorite }}>
+    <ContactContext.Provider
+      value={{ state, addContactData, toggleFavorite, removeContactData }}
+    >
       {props.children}
     </ContactContext.Provider>
   );

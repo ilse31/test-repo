@@ -43,7 +43,7 @@ function useContactList(): ContactListHook {
   const [contactData, setContactData] = useState<Contact[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
   // const [previousSearchValue, setPreviousSearchValue] = useState("");
-  const { state, addContactData } = useContact();
+  const { state, addContactData, removeContactData } = useContact();
   const { contact } = state;
   const {
     data: allData,
@@ -85,65 +85,19 @@ function useContactList(): ContactListHook {
     setIsShowSearch(!isShowSearch);
   };
 
-  const loadMoreData = () => {
-    if (loadingAllData) {
-      return;
-    }
-    if (allData?.contact.length === 0) {
-      return;
-    }
-    if (
-      window.innerHeight + window.scrollY >=
-      document.body.offsetHeight - 100
-    ) {
-      setLoadingMore(true);
-      setTimeout(() => {
-        if (hasMore) {
-          setOffset(offset + limit);
-        }
-        setLoadingMore(false);
-      }, 500);
-    }
-  };
-
-  useEffect(() => {
-    console.log("contact", contact);
-  }, [contact]);
-
   const handleDelete = (id: string) => {
     deletedata({
       variables: { id: parseInt(id) },
     })
-      .then((response) => {
-        setOffset(0);
-        setContactData([]);
-        setHasMore(true);
-      })
+      .then((resp) => removeContactData(parseInt(id)))
       .catch((err) => console.log(err));
   };
-
-  useEffect(() => {
-    if (allData) {
-      const newContactList: Contact[] = allData.contact || [];
-      if (newContactList.length < limit) {
-        setHasMore(false);
-      }
-      setContactData((prevData) => [...prevData, ...newContactList]);
-    }
-  }, [allData, limit]);
 
   useEffect(() => {
     if (!loadingAllData) {
       addContactData(allData?.contact || []);
     }
   }, [loadingAllData]);
-
-  useEffect(() => {
-    window.addEventListener("scroll", loadMoreData);
-    return () => {
-      window.removeEventListener("scroll", loadMoreData);
-    };
-  }, [loadMoreData]);
 
   return {
     limit,
