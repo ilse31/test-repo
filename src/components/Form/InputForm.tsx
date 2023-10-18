@@ -55,7 +55,7 @@ export default function Input({
     <div className={containerClassName}>
       {withLabel && (
         <Typography as='label' variant='s3' className='block' htmlFor={id}>
-          {label}
+          <span className='text-black'> {label}</span>
         </Typography>
       )}
       <div className={clsx("relative", withLabel && "mt-1")}>
@@ -190,7 +190,7 @@ export default function Input({
       )}
       {!hideError && errorMessage && (
         <Typography variant='c1' color='danger' className='mt-1'>
-          {errorMessage}
+          <span className='text-black'> {errorMessage}</span>
         </Typography>
       )}
     </div>

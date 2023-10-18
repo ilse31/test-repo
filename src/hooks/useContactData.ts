@@ -5,7 +5,13 @@ import {
   useMutation,
   useQuery,
 } from "@apollo/client";
-import { GET_CONTACT_LIST, DELETE_DATA, GetContactList } from "src/graphql";
+import {
+  GET_CONTACT_LIST,
+  DELETE_DATA,
+  GetContactList,
+  ADD_DATA_WITH_PHONE,
+  AddContactWithPhones,
+} from "src/graphql";
 import { useContact } from "src/context/contactdata";
 
 interface Contact {
@@ -14,7 +20,13 @@ interface Contact {
   last_name: string;
   phones: any[];
 }
-
+type ContactAction = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  phones: any[];
+  action: string;
+};
 interface ContactListHook {
   searchValue: string;
   setSearchValue: React.Dispatch<React.SetStateAction<string>>;
@@ -32,18 +44,33 @@ interface ContactListHook {
   refetchAllData: (
     variables?: Partial<OperationVariables> | undefined
   ) => Promise<ApolloQueryResult<any>>;
+  handleSubmit: (values: any, { setErrors }: any) => void;
+  showAlert: boolean;
+  setShowAlert: React.Dispatch<React.SetStateAction<boolean>>;
+  setAlertMessage: React.Dispatch<React.SetStateAction<string>>;
+  alertMessage: string;
+  showModal: boolean;
+  setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+  dataDetail: ContactAction;
+  setDataDetail: React.Dispatch<React.SetStateAction<ContactAction>>;
 }
 
 function useContactList(): ContactListHook {
   const [searchValue, setSearchValue] = useState("");
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(100);
   const [offset, setOffset] = useState(0);
   const [isShowSearch, setIsShowSearch] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [contactData, setContactData] = useState<Contact[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
-  // const [previousSearchValue, setPreviousSearchValue] = useState("");
-  const { state, addContactData, removeContactData } = useContact();
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [alertMessage, setAlertMessage] = useState<string>("");
+  const [showAlert, setShowAlert] = useState<boolean>(false);
+  const [dataDetail, setDataDetail] = useState<ContactAction>(
+    {} as ContactAction
+  );
+  const { state, addContactData, removeContactData, addSingleContact } =
+    useContact();
   const { contact } = state;
   const {
     data: allData,
@@ -63,8 +90,54 @@ function useContactList(): ContactListHook {
     ],
   });
 
+  const [InsertData] = useMutation(ADD_DATA_WITH_PHONE, {
+    refetchQueries: [
+      {
+        query: GET_CONTACT_LIST,
+        variables: GetContactList(searchValue, limit, offset, "asc"),
+      },
+    ],
+  });
+
   const handleChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
+  };
+
+  const handleSubmit = (values: any, { setErrors }: any) => {
+    const { first_name, last_name } = values;
+    const isDuplicate = contact.some((item) => {
+      return (
+        item.first_name.toLowerCase() === first_name.toLowerCase() &&
+        item.last_name.toLowerCase() === last_name.toLowerCase()
+      );
+    });
+    if (isDuplicate) {
+      setErrors({
+        first_name: "Nama sudah ada dalam daftar kontak.",
+        last_name: "Nama sudah ada dalam daftar kontak.",
+      });
+    } else {
+      InsertData({
+        variables: AddContactWithPhones(
+          values.first_name,
+          values.last_name,
+          values.phones
+        ),
+      })
+        .then((resp) => {
+          console.log(resp);
+          setShowModal(false);
+          console.log("contact", resp.data.insert_contact.returning[0]);
+          setShowAlert(true);
+          addSingleContact(resp.data.insert_contact.returning[0]);
+          setAlertMessage("Data berhasil ditambahkan.");
+        })
+        .catch((err) => {
+          setAlertMessage(err.message);
+          setShowAlert(true);
+          setShowModal(false);
+        });
+    }
   };
 
   const handleSearch = () => {
@@ -96,6 +169,7 @@ function useContactList(): ContactListHook {
   useEffect(() => {
     if (!loadingAllData) {
       addContactData(allData?.contact || []);
+      setAlertMessage("");
     }
   }, [loadingAllData]);
 
@@ -114,6 +188,15 @@ function useContactList(): ContactListHook {
     handleDelete,
     setContactData,
     refetchAllData,
+    handleSubmit,
+    setShowAlert,
+    showAlert,
+    setAlertMessage,
+    alertMessage,
+    showModal,
+    setShowModal,
+    setDataDetail,
+    dataDetail,
   };
 }
 

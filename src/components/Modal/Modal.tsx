@@ -9,6 +9,7 @@ type Props = {
   children?: React.ReactNode;
   showModal: boolean;
   setShowModal: React.Dispatch<SetStateAction<boolean>>;
+  handleClose: React.MouseEventHandler<SVGElement> | undefined;
 };
 
 const Modal = ({
@@ -18,15 +19,16 @@ const Modal = ({
   showModal,
   setShowModal,
   children,
+  handleClose,
 }: Props) => {
   return (
     <>
       {showModal && (
         <>
-          <div className='w-screen h-screen bg-black bg-opacity-50 fixed top-0 bottom-0 left-0 right-0 mx-auto'></div>
+          <div className='w-screen h-screen bg-black bg-opacity-50 fixed top-0 bottom-0 left-0 right-0 mx-auto overflow-y-auto'></div>
           <div
             className={clsxm(
-              "bg-white p-3 rounded-md shadow-md border fixed left-0 right-0 mx-auto z-10 animate-swoosh_from_top",
+              "bg-white p-3 overflow-auto h-[500px] rounded-md shadow-md border fixed left-0 right-0 mx-auto z-10 animate-swoosh_from_top",
               [
                 size === "sm" && "w-3/4 md:w-1/4",
                 size === "md" && "w-3/4 md:w-5/12",
@@ -38,7 +40,7 @@ const Modal = ({
             <div className='flex w-full justify-between items-center'>
               <h4 className='font-semibold text-black'>{title}</h4>
               <MdOutlineClose
-                onClick={() => setShowModal(false)}
+                onClick={handleClose}
                 size={22}
                 className='cursor-pointer text-black'
               />

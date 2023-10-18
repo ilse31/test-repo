@@ -43,6 +43,7 @@ const ModalPages = () => {
               content='Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ipsum iure sint odit perspiciatis officia temporibus harum earum excepturi doloribus? Ipsam aut similique mollitia distinctio. Officia doloribus a voluptas veniam nobis voluptatibus illum, iure debitis sequi nisi laboriosam sapiente omnis assumenda, impedit perspiciatis? Sapiente minus aliquam quisquam accusantium qui, veritatis consequatur.'
               showModal={showModal}
               setShowModal={setShowModal}
+              handleClose={(e: React.MouseEvent) => setShowModal(false)}
             />
           )}
           {/* <div className="w-1/3 bg-white p-3">

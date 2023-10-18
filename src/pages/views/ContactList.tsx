@@ -1,24 +1,25 @@
-import { useMutation, useQuery } from "@apollo/client";
 import React, { useEffect, useState } from "react";
 import Input from "src/components/Form/InputForm";
 import { AiOutlineSearch } from "react-icons/ai";
-import { BiMenuAltLeft } from "react-icons/bi";
 import { BsFillPersonFill, BsFillTrashFill } from "react-icons/bs";
 import Typography from "src/components/Typografy/Text";
 import LoadingSpiner from "src/components/Loading/LoadingSpiner";
-import { DELETE_DATA, GET_CONTACT_LIST, GetContactList } from "src/graphql";
 import useContactList from "src/hooks/useContactData";
 import { useContact } from "src/context/contactdata";
 import Button from "src/components/Button/Button";
 import Modal from "src/components/Modal/Modal";
+import Alert from "src/components/Alert/Alert";
+import ContactForm from "src/components/ContactForm";
+import DeleteConfirmationBox from "src/components/DeleteConfirmationBox";
 
 type Props = {};
 
-type Contact = {
+type ContactAction = {
   id: string;
   first_name: string;
   last_name: string;
   phones: any[];
+  action: string;
 };
 
 const ContactList = (props: Props) => {
@@ -37,13 +38,29 @@ const ContactList = (props: Props) => {
     setContactData,
     refetchAllData,
     limit,
+    handleSubmit,
+    dataDetail,
+    setDataDetail,
+    showAlert,
+    setShowAlert,
+    alertMessage,
+    setAlertMessage,
+    showModal,
+    setShowModal,
   } = useContactList();
   const { state, toggleFavorite } = useContact();
   const { contact } = state;
 
-  const [showModal, setShowModal] = useState<boolean>(false);
-  const [dataDeleted, setDataDeleted] = useState<Contact>({} as Contact);
-  const [isFavorites, setIsFavorites] = useState<boolean>(false); // Tambahkan state dan fungsi untuk mengubahnya
+  const [isFavorites, setIsFavorites] = useState<boolean>(false);
+
+  React.useEffect(() => {
+    setTimeout(() => {
+      if (showAlert) {
+        setShowAlert(false);
+        // setAlertFields({});
+      }
+    }, 3000);
+  }, [showAlert]);
 
   return (
     <div className='dark:text-white'>
@@ -80,8 +97,6 @@ const ContactList = (props: Props) => {
                     className='text-black cursor-pointer'
                     onClick={(e: any) => {
                       setSearchValue("");
-                      refetchAllData(GetContactList("", limit, 0, "asc"));
-                      setContactData([]);
                     }}
                   >
                     X
@@ -103,27 +118,39 @@ const ContactList = (props: Props) => {
         )}
       </div>
       <div className='max-w-3xl mx-auto gap-10'>
-        <div className='flex flex-row gap-5'>
-          <div
-            onClick={(e: React.MouseEvent) => setIsFavorites(false)}
-            className={`${
-              isFavorites
-                ? " p-3 hover:outline rounded-md cursor-pointer"
-                : "bg-sky-500 p-3 hover:outline rounded-md cursor-pointer"
-            }`}
-          >
-            Contact
+        <div className='flex justify-between'>
+          <div className='flex flex-row gap-5'>
+            <div
+              onClick={(e: React.MouseEvent) => setIsFavorites(false)}
+              className={`${
+                isFavorites
+                  ? " p-3 hover:outline rounded-md cursor-pointer"
+                  : "bg-sky-500 p-3 hover:outline rounded-md cursor-pointer"
+              }`}
+            >
+              Contact
+            </div>
+            <div
+              onClick={(e: React.MouseEvent) => setIsFavorites(true)}
+              className={`${
+                isFavorites
+                  ? "bg-sky-500 p-3 hover:outline rounded-md cursor-pointer"
+                  : "p-3 hover:outline rounded-md cursor-pointer"
+              }`}
+            >
+              Contact Favorites
+            </div>
           </div>
-          <div
-            onClick={(e: React.MouseEvent) => setIsFavorites(true)}
-            className={`${
-              isFavorites
-                ? "bg-sky-500 p-3 hover:outline rounded-md cursor-pointer"
-                : "p-3 hover:outline rounded-md cursor-pointer"
-            }`}
+          <Button
+            size='sm'
+            variant='purple'
+            onClick={(e: React.MouseEvent) => {
+              setDataDetail({ ...dataDetail, action: "Add" });
+              setShowModal(true);
+            }}
           >
-            Contact Favorites
-          </div>
+            Tambah Contact
+          </Button>
         </div>
 
         {loadingAllData ? <LoadingSpiner /> : null}
@@ -171,10 +198,18 @@ const ContactList = (props: Props) => {
                   >
                     {contact.isFavorites ? "UnFav" : "Favorites"}
                   </Button>
+                  <Button
+                    onClick={(e: React.MouseEvent) => {
+                      setShowModal(true);
+                      setDataDetail({ ...contact, action: "Detail" });
+                    }}
+                  >
+                    see detail
+                  </Button>
                   <BsFillTrashFill
                     onClick={(e: React.MouseEvent) => {
                       setShowModal(true);
-                      setDataDeleted(contact);
+                      setDataDetail({ ...contact, action: "Delete" });
                     }}
                     className='cursor-pointer'
                   />
@@ -189,38 +224,61 @@ const ContactList = (props: Props) => {
         <div className='absolute top-10'>
           {showModal && (
             <Modal
-              title={"Are you sure to delete this data?"}
+              title={
+                dataDetail.action === "Delete"
+                  ? "Are you sure to delete this data?"
+                  : dataDetail.action === "Add"
+                  ? "Add Data Contact"
+                  : "Detail Contact"
+              }
               size={"md"}
               content={""}
               showModal={showModal}
               setShowModal={setShowModal}
+              handleClose={(e: React.MouseEvent) => {
+                setShowModal(false);
+                setDataDetail({} as ContactAction);
+              }}
             >
-              <div className='flex flex-col items-center gap-5'>
-                <div className='flex justify-start'>
-                  <h5 className='text-black'>
-                    {`${dataDeleted.first_name} ${dataDeleted.last_name}`}
-                  </h5>
-                </div>
-                <div className='flex gap-5 justify-end w-full'>
-                  <Button
-                    onClick={(e: React.MouseEvent) => {
+              <div className='flex flex-col items-center gap-5 w-full'>
+                {dataDetail.action === "Delete" ? (
+                  <DeleteConfirmationBox
+                    dataDeleted={dataDetail}
+                    handleDelete={() => handleDelete(dataDetail.id)}
+                    setShowAlert={setShowAlert}
+                    setShowModal={setShowModal}
+                  />
+                ) : dataDetail.action === "Add" ? (
+                  <ContactForm
+                    contact={null}
+                    handleSubmit={handleSubmit}
+                    isDetail={false}
+                    handleClose={() => {
                       setShowModal(false);
+                      setDataDetail({} as ContactAction);
                     }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant='rose'
-                    onClick={(e: React.MouseEvent) => {
-                      handleDelete(dataDeleted.id);
+                  />
+                ) : (
+                  <ContactForm
+                    contact={dataDetail}
+                    handleSubmit={handleSubmit}
+                    isDetail={true}
+                    handleClose={() => {
                       setShowModal(false);
+                      setDataDetail({} as ContactAction);
                     }}
-                  >
-                    Delete
-                  </Button>
-                </div>
+                  />
+                )}
               </div>
             </Modal>
+          )}
+
+          {showAlert && (
+            <Alert
+              text={alertMessage ? alertMessage : "Success"}
+              variant={"success"}
+              direction={"top-right"}
+            />
           )}
         </div>
       </div>
