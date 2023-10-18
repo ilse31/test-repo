@@ -56,42 +56,45 @@ const Alert = ({
           )}
         >
           {variant === "success" && (
-            <div className="flex items-center gap-1">
+            <div className='flex items-center gap-1'>
               {AlertIconSuccess ? (
-                <AlertIconSuccess />
+                <AlertIconSuccess data-testid='Success alert' />
               ) : (
                 <BsCheckCircleFill
-                  fill="#22c55e"
-                  className="w-[16px] h-[16px]"
+                  fill='#22c55e'
+                  data-testid='Success alert'
+                  className='w-[16px] h-[16px]'
                 />
               )}
-              <p className="mb-1 text-slate-700">{text}</p>
+              <p className='mb-1 text-slate-700'>{text}</p>
             </div>
           )}
           {variant === "warning" && (
-            <div className="flex items-center gap-1">
+            <div className='flex items-center gap-1'>
               {AlertIconWarning ? (
-                <AlertIconWarning />
+                <AlertIconWarning data-testid='warning-icon' />
               ) : (
                 <PiWarningCircleFill
-                  fill="#f59e0b"
-                  className="w-[20px] h-[20px]"
+                  fill='#f59e0b'
+                  data-testid='warning-icon'
+                  className='w-[20px] h-[20px]'
                 />
               )}
-              <p className="mb-1 text-slate-700">{text}</p>
+              <p className='mb-1 text-slate-700'>{text}</p>
             </div>
           )}
           {variant === "error" && (
-            <div className="flex items-center gap-1">
+            <div className='flex items-center gap-1'>
               {AlertIconError ? (
-                <AlertIconError />
+                <AlertIconError data-testid='error-icon' />
               ) : (
                 <AiFillCloseCircle
-                  fill="#ef4444"
-                  className="w-[20px] h-[20px]"
+                  fill='#ef4444'
+                  data-testid='error-icon'
+                  className='w-[20px] h-[20px]'
                 />
               )}
-              <p className="mb-1 text-slate-700">{text}</p>
+              <p className='mb-1 text-slate-700'>{text}</p>
             </div>
           )}
         </div>
