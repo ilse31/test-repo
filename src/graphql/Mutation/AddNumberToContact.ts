@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 
-const ADD_DATA_WITH_PHONE = gql`
+const ADD_NUMBER_TO_CONTACT = gql`
   mutation AddNumberToContact($contact_id: Int!, $phone_number: String!) {
     insert_phone(objects: { contact_id: $contact_id, number: $phone_number }) {
       returning {
@@ -17,4 +17,4 @@ const ADD_DATA_WITH_PHONE = gql`
   }
 `;
 
-export { ADD_DATA_WITH_PHONE };
+export { ADD_NUMBER_TO_CONTACT };

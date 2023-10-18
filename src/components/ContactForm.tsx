@@ -26,7 +26,6 @@ const ContactForm = ({
   contact,
   handleClose,
 }: Props) => {
-  console.log(contact);
   return (
     <Formik
       validationSchema={ContactValidationSchema}
@@ -121,7 +120,7 @@ const ContactForm = ({
             <Button variant='danger' onClick={handleClose} type='submit'>
               Back
             </Button>
-            <Button variant='sky' type='submit'>
+            <Button disabled={isDetail} variant='sky' type='submit'>
               Send
             </Button>
           </div>

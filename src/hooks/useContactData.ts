@@ -11,6 +11,8 @@ import {
   GetContactList,
   ADD_DATA_WITH_PHONE,
   AddContactWithPhones,
+  AddNumberToContact,
+  ADD_NUMBER_TO_CONTACT,
 } from "src/graphql";
 import { useContact } from "src/context/contactdata";
 
@@ -70,9 +72,13 @@ function useContactList(): ContactListHook {
   const [dataDetail, setDataDetail] = useState<ContactAction>(
     {} as ContactAction
   );
+
+  //global state untuk crud data
   const { state, addContactData, removeContactData, addSingleContact } =
     useContact();
   const { contact } = state;
+
+  //buat load all data
   const {
     data: allData,
     loading: loadingAllData,
@@ -82,6 +88,7 @@ function useContactList(): ContactListHook {
     variables: GetContactList("", limit, offset, "asc"),
   });
 
+  //buat delete data
   const [deletedata, { loading: loadingDelete }] = useMutation(DELETE_DATA, {
     refetchQueries: [
       {
@@ -91,7 +98,17 @@ function useContactList(): ContactListHook {
     ],
   });
 
+  //buat insertdata
   const [InsertData] = useMutation(ADD_DATA_WITH_PHONE, {
+    refetchQueries: [
+      {
+        query: GET_CONTACT_LIST,
+        variables: GetContactList(searchValue, limit, offset, "asc"),
+      },
+    ],
+  });
+
+  const [insertPhone] = useMutation(ADD_NUMBER_TO_CONTACT, {
     refetchQueries: [
       {
         query: GET_CONTACT_LIST,
@@ -104,43 +121,60 @@ function useContactList(): ContactListHook {
     setSearchValue(e.target.value);
   };
 
-  const handleSubmit = (values: any, { setErrors }: any) => {
-    const { first_name, last_name } = values;
-    const isDuplicate = contact.some((item) => {
-      return (
-        item.first_name.toLowerCase() === first_name.toLowerCase() &&
-        item.last_name.toLowerCase() === last_name.toLowerCase()
-      );
-    });
-    if (isDuplicate) {
-      setErrors({
-        first_name: "Nama sudah ada dalam daftar kontak.",
-        last_name: "Nama sudah ada dalam daftar kontak.",
+  //handlesubmit dan validasi uniq di firstname dan lastname
+  const handleSubmit = async (values: any, { setErrors }: any) => {
+    if (dataDetail.action === "Add") {
+      const { first_name, last_name } = values;
+      const isDuplicate = contact.some((item) => {
+        return (
+          item.first_name.toLowerCase() === first_name.toLowerCase() &&
+          item.last_name.toLowerCase() === last_name.toLowerCase()
+        );
       });
-    } else {
-      InsertData({
-        variables: AddContactWithPhones(
-          values.first_name,
-          values.last_name,
-          values.phones
-        ),
-      })
-        .then((resp) => {
-          console.log(resp);
-          setShowModal(false);
-          console.log("contact", resp.data.insert_contact.returning[0]);
-          setShowAlert(true);
-          addSingleContact(resp.data.insert_contact.returning[0]);
-          setAlertMessage("Data berhasil ditambahkan.");
-        })
-        .catch((err) => {
-          setAlertMessage(err.message);
-          setShowAlert(true);
-          setShowModal(false);
+      if (isDuplicate) {
+        setErrors({
+          first_name: "Nama sudah ada dalam daftar kontak.",
+          last_name: "Nama sudah ada dalam daftar kontak.",
         });
+      } else {
+        InsertData({
+          variables: AddContactWithPhones(
+            values.first_name,
+            values.last_name,
+            values.phones
+          ),
+        })
+          .then((resp) => {
+            console.log(resp);
+            setShowModal(false);
+            console.log("contact", resp.data.insert_contact.returning[0]);
+            setShowAlert(true);
+            addSingleContact(resp.data.insert_contact.returning[0]);
+            setAlertMessage("Data berhasil ditambahkan.");
+          })
+          .catch((err) => {
+            setAlertMessage(err.message);
+            setShowAlert(true);
+            setShowModal(false);
+          });
+      }
+    } else {
+      try {
+        let result = await insertPhone({
+          variables: AddNumberToContact(values.id, values.number),
+        });
+        addSingleContact(result.data.insert_phone.returning[0].contact);
+        setShowAlert(true);
+        console.log("alawkjdawndjkn");
+        setShowModal(false);
+        setAlertMessage("Data berhasil ditambahkan.");
+      } catch (error) {
+        console.log("err", error);
+      }
     }
   };
 
+  //pagination infinite scrolling
   const handleScroll = () => {
     if (
       window.innerHeight + document.documentElement.scrollTop !==

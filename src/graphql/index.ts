@@ -12,6 +12,7 @@ import {
 
 import { DELETE_DATA } from "./Mutation/DeleteData";
 import { ADD_DATA_WITH_PHONE } from "./Mutation/AddDataWithPhone";
+import { ADD_NUMBER_TO_CONTACT } from "./Mutation/AddNumberToContact";
 
 export {
   GET_CONTACT_DETAIL,
@@ -22,5 +23,6 @@ export {
   DELETE_DATA,
   ADD_DATA_WITH_PHONE,
   AddContactWithPhones,
+  ADD_NUMBER_TO_CONTACT,
   AddNumberToContact,
 };

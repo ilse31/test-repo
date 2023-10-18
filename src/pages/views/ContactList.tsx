@@ -11,6 +11,7 @@ import Modal from "src/components/Modal/Modal";
 import Alert from "src/components/Alert/Alert";
 import ContactForm from "src/components/ContactForm";
 import DeleteConfirmationBox from "src/components/DeleteConfirmationBox";
+import { Formik } from "formik";
 
 type Props = {};
 
@@ -202,6 +203,14 @@ const ContactList = (props: Props) => {
                   <Button
                     onClick={(e: React.MouseEvent) => {
                       setShowModal(true);
+                      setDataDetail({ ...contact, action: "AddNewNumber" });
+                    }}
+                  >
+                    Add New Number
+                  </Button>
+                  <Button
+                    onClick={(e: React.MouseEvent) => {
+                      setShowModal(true);
                       setDataDetail({ ...contact, action: "Detail" });
                     }}
                   >
@@ -260,6 +269,41 @@ const ContactList = (props: Props) => {
                       setDataDetail({} as ContactAction);
                     }}
                   />
+                ) : dataDetail.action === "AddNewNumber" ? (
+                  <Formik
+                    initialValues={{ id: dataDetail.id, number: "" }}
+                    onSubmit={handleSubmit}
+                  >
+                    {({ values, handleChange, handleSubmit, errors }) => (
+                      <form
+                        className='gap-3 flex-col flex w-full'
+                        onSubmit={handleSubmit}
+                      >
+                        <Input
+                          color='sky'
+                          id='number'
+                          label='Number'
+                          variant='solid'
+                          onChange={handleChange}
+                          value={values.number}
+                          errorMessage={errors.number}
+                          placeholder='Number'
+                          onKeyPress={(e: React.KeyboardEvent) => {
+                            const charCode = e.charCode;
+                            if (charCode < 48 || charCode > 57) {
+                              e.preventDefault();
+                            }
+                          }}
+                          about='This is Number add to contact'
+                          name='number'
+                          type='text'
+                        />
+                        <Button variant='sky' type='submit'>
+                          Send
+                        </Button>
+                      </form>
+                    )}
+                  </Formik>
                 ) : (
                   <ContactForm
                     contact={dataDetail}
