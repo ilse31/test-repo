@@ -42,6 +42,7 @@ const Modal = ({
               <MdOutlineClose
                 onClick={handleClose}
                 size={22}
+                data-testid='close-button'
                 className='cursor-pointer text-black'
               />
             </div>
