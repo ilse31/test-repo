@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ApolloQueryResult,
   OperationVariables,
@@ -53,11 +53,12 @@ interface ContactListHook {
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
   dataDetail: ContactAction;
   setDataDetail: React.Dispatch<React.SetStateAction<ContactAction>>;
+  observerTarget: React.MutableRefObject<null>;
 }
 
 function useContactList(): ContactListHook {
   const [searchValue, setSearchValue] = useState("");
-  const [limit, setLimit] = useState(100);
+  const [limit, setLimit] = useState(10);
   const [offset, setOffset] = useState(0);
   const [isShowSearch, setIsShowSearch] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -140,6 +141,51 @@ function useContactList(): ContactListHook {
     }
   };
 
+  const handleScroll = () => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop !==
+        document.documentElement.offsetHeight ||
+      loadingAllData ||
+      allData?.contact.length === 0
+    ) {
+      return;
+    }
+    setOffset(offset + limit);
+    refetchAllData({
+      variables: GetContactList(searchValue, limit, offset, "asc"),
+    });
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [loadingAllData, allData]);
+
+  const observerTarget = React.useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          refetchAllData({
+            variables: GetContactList(searchValue, limit, offset, "asc"),
+          });
+        }
+      },
+      { threshold: 1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [observerTarget]);
+
   const handleSearch = () => {
     console.log(searchValue);
     // if (searchValue !== previousSearchValue) {
@@ -197,6 +243,7 @@ function useContactList(): ContactListHook {
     setShowModal,
     setDataDetail,
     dataDetail,
+    observerTarget,
   };
 }
 

@@ -47,6 +47,7 @@ const ContactList = (props: Props) => {
     setAlertMessage,
     showModal,
     setShowModal,
+    observerTarget,
   } = useContactList();
   const { state, toggleFavorite } = useContact();
   const { contact } = state;
@@ -221,6 +222,7 @@ const ContactList = (props: Props) => {
             <Typography variant='h2'>No Data Found</Typography>
           )}
         </div>
+        <div ref={observerTarget}></div>
         <div className='absolute top-10'>
           {showModal && (
             <Modal
