@@ -5,10 +5,18 @@ import Input from "./Form/InputForm";
 import Button from "./Button/Button";
 import { contactValues } from "src/constant/FormikValues/ContactValues";
 
+type ContactAction = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  phones: any[];
+  action: string;
+};
+
 type Props = {
   handleSubmit: (values: any, { setErrors }: any) => void;
   isDetail: boolean;
-  contact: any;
+  contact: ContactAction;
   handleClose: () => void;
 };
 

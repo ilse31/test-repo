@@ -250,7 +250,7 @@ const ContactList = (props: Props) => {
                   />
                 ) : dataDetail.action === "Add" ? (
                   <ContactForm
-                    contact={null}
+                    contact={dataDetail}
                     handleSubmit={handleSubmit}
                     isDetail={false}
                     handleClose={() => {
