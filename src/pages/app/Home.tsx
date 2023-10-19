@@ -31,7 +31,7 @@ const Home = (props: Props) => {
         </span>
         <div className='flex flex-col'>
           <Link className='underline' to='/phonebook'>
-            Go to Apps
+            Go to Phonebook Apps
           </Link>
           <a className='underline' href='https://github.com/ilse31/test-repo'>
             See Repos
