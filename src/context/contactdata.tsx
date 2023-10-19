@@ -51,9 +51,16 @@ const contactReducer = (
         contact: updatedContact,
       };
     case ADD_SINGLE_CONTACT:
+      const updatedContacts = state.contact.map((existingContact: any) => {
+        if (existingContact.id === action.payload.id) {
+          // Jika ID cocok, gantikan dengan kontak yang baru
+          return action.payload;
+        }
+        return existingContact;
+      });
       return {
         ...state,
-        contact: [...state.contact, action.payload],
+        contact: updatedContacts,
       };
     case REMOVE_CONTACT_DATA:
       const filteredContact = state.contact.filter(
@@ -93,13 +100,7 @@ const ContactProvider = (props: ContactProviderProps) => {
   };
 
   const addSingleContact = (contact: any) => {
-    console.log("contact", contact);
-    const contactWithFavorites = {
-      ...contact,
-      isFavorites: false,
-    };
-
-    dispatch({ type: ADD_SINGLE_CONTACT, payload: contactWithFavorites });
+    dispatch({ type: ADD_SINGLE_CONTACT, payload: contact });
   };
 
   return (
