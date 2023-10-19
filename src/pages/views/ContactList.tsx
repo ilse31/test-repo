@@ -48,7 +48,6 @@ const ContactList = (props: Props) => {
     setAlertMessage,
     showModal,
     setShowModal,
-    observerTarget,
   } = useContactList();
   const { state, toggleFavorite } = useContact();
   const { contact } = state;
@@ -86,6 +85,7 @@ const ContactList = (props: Props) => {
             onChange={handleChangeSearch}
             color='sky'
             type='text'
+            data-testid='search-input'
             onKeyUp={(e: React.KeyboardEvent) => {
               if (e.key === "Enter") {
                 handleSearch();
@@ -160,78 +160,83 @@ const ContactList = (props: Props) => {
         {errorAllData ? <Typography>Error</Typography> : null}
         {loadingMore && <div className='text-center py-4'>Loading. . .</div>}
 
-        {contact &&
-          contact
-            .filter((item: any) => {
-              const isContactFavorite = item.isFavorites;
-              if (isFavorites) {
-                return isContactFavorite;
-              } else {
-                return !isContactFavorite;
-              }
-            })
-            .filter((item: any) => {
-              return (
-                item.first_name
-                  .toLowerCase()
-                  .includes(searchValue.toLowerCase()) ||
-                item.last_name.toLowerCase().includes(searchValue.toLowerCase())
-              );
-            })
-            .map((contact: any, index: number) => (
-              <div
-                key={index}
-                className='flex gap-10 justify-between outline my-5 p-5 rounded-md items-center'
-              >
-                <div className='flex gap-10 items-center'>
-                  <BsFillPersonFill className='text-4xl' />
-                  <div>
-                    <Typography key={index}>
-                      {contact.first_name} {contact.last_name}
-                    </Typography>
-                    {contact.phones[0]?.number}
+        <div data-testid='contact-data'>
+          {contact &&
+            contact
+              .filter((item: any) => {
+                const isContactFavorite = item.isFavorites;
+                if (isFavorites) {
+                  return isContactFavorite;
+                } else {
+                  return !isContactFavorite;
+                }
+              })
+              .filter((item: any) => {
+                return (
+                  item.first_name
+                    .toLowerCase()
+                    .includes(searchValue.toLowerCase()) ||
+                  item.last_name
+                    .toLowerCase()
+                    .includes(searchValue.toLowerCase())
+                );
+              })
+              .map((contact: any, index: number) => (
+                <div
+                  key={index}
+                  data-testid='contact-data'
+                  className='flex gap-10 justify-between outline my-5 p-5 rounded-md items-center'
+                >
+                  <div className='flex gap-10 items-center'>
+                    <BsFillPersonFill className='text-4xl' />
+                    <div>
+                      <Typography key={index}>
+                        {contact.first_name} {contact.last_name}
+                      </Typography>
+                      {contact.phones[0]?.number}
+                    </div>
+                  </div>
+                  <div className='flex items-center gap-5'>
+                    <Button
+                      onClick={(e: React.MouseEvent) =>
+                        toggleFavorite(contact.id)
+                      }
+                    >
+                      {contact.isFavorites ? "UnFav" : "Favorites"}
+                    </Button>
+                    <Button
+                      onClick={(e: React.MouseEvent) => {
+                        setShowModal(true);
+                        setDataDetail({ ...contact, action: "AddNewNumber" });
+                      }}
+                    >
+                      Add New Number
+                    </Button>
+                    <Button
+                      onClick={(e: React.MouseEvent) => {
+                        setShowModal(true);
+                        setDataDetail({ ...contact, action: "Detail" });
+                      }}
+                    >
+                      see detail
+                    </Button>
+                    <BsFillTrashFill
+                      onClick={(e: React.MouseEvent) => {
+                        setShowModal(true);
+                        setDataDetail({ ...contact, action: "Delete" });
+                      }}
+                      className='cursor-pointer'
+                    />
                   </div>
                 </div>
-                <div className='flex items-center gap-5'>
-                  <Button
-                    onClick={(e: React.MouseEvent) =>
-                      toggleFavorite(contact.id)
-                    }
-                  >
-                    {contact.isFavorites ? "UnFav" : "Favorites"}
-                  </Button>
-                  <Button
-                    onClick={(e: React.MouseEvent) => {
-                      setShowModal(true);
-                      setDataDetail({ ...contact, action: "AddNewNumber" });
-                    }}
-                  >
-                    Add New Number
-                  </Button>
-                  <Button
-                    onClick={(e: React.MouseEvent) => {
-                      setShowModal(true);
-                      setDataDetail({ ...contact, action: "Detail" });
-                    }}
-                  >
-                    see detail
-                  </Button>
-                  <BsFillTrashFill
-                    onClick={(e: React.MouseEvent) => {
-                      setShowModal(true);
-                      setDataDetail({ ...contact, action: "Delete" });
-                    }}
-                    className='cursor-pointer'
-                  />
-                </div>
-              </div>
-            ))}
+              ))}
+        </div>
         <div className='items-center justify-center flex '>
           {contact.length === 0 && !loadingAllData && !errorAllData && (
             <Typography variant='h2'>No Data Found</Typography>
           )}
         </div>
-        <div ref={observerTarget}></div>
+
         <div className='absolute top-10'>
           {showModal && (
             <Modal
