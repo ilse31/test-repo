@@ -33,10 +33,7 @@ const Home = (props: Props) => {
           <Link className='underline' to='/phonebook'>
             Go to Apps
           </Link>
-          <a
-            className='underline'
-            href='https://github.com/ilse31/react-scratch-boilerplate'
-          >
+          <a className='underline' href='https://github.com/ilse31/test-repo'>
             See Repos
           </a>
         </div>
